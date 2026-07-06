@@ -31,6 +31,24 @@ const COLORS = [
 const MASK_COLOR = "#d8d5cd";
 const NO_DATA_COLOR = "#f4f2ed";
 const LOW_SUPPORT_WARNING_FLOOR = 0.10;
+const METRIC_CONFIG = {
+  cv: {
+    label: "Relative CV",
+    detailLabel: "Within-mahalle CV",
+    field: "cv",
+    max: 0.60,
+    ticks: ["0", "0.15", "0.30", "0.45", "≥0.60"],
+    note: "Color shows relative within-mahalle dispersion (CV).",
+  },
+  sd: {
+    label: "Absolute SD",
+    detailLabel: "Within-mahalle SD",
+    field: "mean_sd",
+    max: 0.10,
+    ticks: ["0", "2.5 pp", "5 pp", "7.5 pp", "≥10 pp"],
+    note: "Color shows absolute within-mahalle standard deviation in vote-share points.",
+  },
+};
 const TURKEY_BOUNDS = L.latLngBounds([35.45, 25.35], [42.45, 45.05]);
 const REGIONAL_PAN_BOUNDS = L.latLngBounds([29.0, 18.0], [48.5, 52.0]);
 const DISTRICT_RENDERER = L.canvas({ padding: 0.35 });
@@ -38,6 +56,7 @@ const DISTRICT_RENDERER = L.canvas({ padding: 0.35 });
 let currentParty = "akp";
 let currentElectionIndex = 4;
 let currentSupportFloor = 0.10;
+let currentMetric = "cv";
 let geoLayer;
 let selectedLayer;
 
@@ -65,6 +84,9 @@ const partySelect = document.getElementById("partySelect");
 const electionSlider = document.getElementById("electionSlider");
 const electionLabel = document.getElementById("electionLabel");
 const supportFloorInputs = Array.from(document.querySelectorAll('input[name="supportFloor"]'));
+const metricInputs = Array.from(document.querySelectorAll('input[name="mapMetric"]'));
+const legendTicks = document.getElementById("legendTicks");
+const metricNote = document.getElementById("metricNote");
 const floorNote = document.getElementById("floorNote");
 const details = document.getElementById("details");
 
@@ -78,12 +100,21 @@ function metric(feature) {
   return byElection[currentParty] || null;
 }
 
-function colorForCv(cv) {
-  if (cv === null || cv === undefined || Number.isNaN(cv)) {
+function activeMetric() {
+  return METRIC_CONFIG[currentMetric];
+}
+
+function metricValue(m) {
+  return m ? m[activeMetric().field] : null;
+}
+
+function colorForMetric(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
     return NO_DATA_COLOR;
   }
-  const clamped = Math.max(0, Math.min(0.6, cv));
-  const idx = Math.min(COLORS.length - 1, Math.floor((clamped / 0.6) * COLORS.length));
+  const max = activeMetric().max;
+  const clamped = Math.max(0, Math.min(max, value));
+  const idx = Math.min(COLORS.length - 1, Math.floor((clamped / max) * COLORS.length));
   return COLORS[idx];
 }
 
@@ -97,7 +128,7 @@ function floorLabel(value = currentSupportFloor) {
 
 function styleFeature(feature) {
   const m = metric(feature);
-  const fill = !m ? NO_DATA_COLOR : isMasked(m) ? MASK_COLOR : colorForCv(m.cv);
+  const fill = !m ? NO_DATA_COLOR : isMasked(m) ? MASK_COLOR : colorForMetric(metricValue(m));
   return {
     color: "#fcfcfb",
     weight: 0.45,
@@ -129,6 +160,17 @@ function formatCv(value) {
   return value.toFixed(3);
 }
 
+function formatSd(value) {
+  if (value === null || value === undefined || Number.isNaN(value)) {
+    return "n/a";
+  }
+  return `${(value * 100).toFixed(1)} pp`;
+}
+
+function formatMetric(value) {
+  return currentMetric === "sd" ? formatSd(value) : formatCv(value);
+}
+
 function districtTitle(props) {
   const province = props.province || "Unknown province";
   return `${province} / ${props.district}`;
@@ -141,7 +183,7 @@ function tooltipHtml(feature) {
     return `<strong>${districtTitle(props)}</strong><br>No data for ${PARTY_LABELS[currentParty]}, ${activeElection().label}`;
   }
   const masked = isMasked(m) ? `<br><em>Masked: party support under ${floorLabel()}</em>` : "";
-  return `<strong>${districtTitle(props)}</strong><br>${PARTY_LABELS[currentParty]} ${activeElection().label}<br>CV: ${formatCv(m.cv)} | Share: ${formatPercent(m.mean_share)}${masked}`;
+  return `<strong>${districtTitle(props)}</strong><br>${PARTY_LABELS[currentParty]} ${activeElection().label}<br>${activeMetric().label}: ${formatMetric(metricValue(m))} | Share: ${formatPercent(m.mean_share)}${masked}`;
 }
 
 function detailsHtml(feature) {
@@ -164,6 +206,7 @@ function detailsHtml(feature) {
     <p>${PARTY_LABELS[currentParty]} in ${activeElection().label}. District values aggregate mahalle-level within-box dispersion.</p>
     <div class="metric-grid">
       <div class="metric"><span>Within-mahalle CV</span><strong>${formatCv(m.cv)}</strong></div>
+      <div class="metric"><span>Within-mahalle SD</span><strong>${formatSd(m.mean_sd)}</strong></div>
       <div class="metric"><span>Mean party share</span><strong>${formatPercent(m.mean_share)}</strong></div>
       <div class="metric"><span>Registered voters</span><strong>${formatNumber(m.registered_voters)}</strong></div>
       <div class="metric"><span>Mahalles included</span><strong>${formatNumber(m.mahalle_count)}</strong></div>
@@ -202,6 +245,8 @@ function bindFeature(feature, layer) {
 
 function refreshMap() {
   electionLabel.value = activeElection().label;
+  legendTicks.innerHTML = activeMetric().ticks.map((tick) => `<span>${tick}</span>`).join("");
+  metricNote.textContent = activeMetric().note;
   floorNote.textContent = `Gray districts are masked because the selected party is under ${floorLabel()} mean support or has no usable list/geometry.`;
   if (!geoLayer) {
     return;
@@ -210,7 +255,7 @@ function refreshMap() {
   geoLayer.setStyle(styleFeature);
   details.innerHTML = `
     <h2>${PARTY_LABELS[currentParty]} - ${activeElection().label}</h2>
-    <p>Click a district to inspect CV, mean party share, registered voters, and mahalle count.</p>
+    <p>Click a district to inspect CV, absolute SD, mean party share, registered voters, and mahalle count.</p>
   `;
 }
 
@@ -227,6 +272,13 @@ electionSlider.addEventListener("input", (event) => {
 supportFloorInputs.forEach((input) => {
   input.addEventListener("change", (event) => {
     currentSupportFloor = Number(event.target.value);
+    refreshMap();
+  });
+});
+
+metricInputs.forEach((input) => {
+  input.addEventListener("change", (event) => {
+    currentMetric = event.target.value;
     refreshMap();
   });
 });

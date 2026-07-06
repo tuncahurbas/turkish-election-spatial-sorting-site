@@ -17,8 +17,9 @@
           <h1>Where did stable neighborhoods become more internally uniform?</h1>
           <p class="lede">
             Districts are shaded by the voter-weighted within-mahalle coefficient
-            of variation (CV) of party support. Darker districts contain mahalles
-            whose ballot boxes are more internally divided for the selected party.
+            of variation (CV) or absolute standard deviation of party support.
+            Darker districts contain mahalles whose ballot boxes are more
+            internally divided for the selected party.
           </p>
         </div>
 
@@ -44,11 +45,18 @@
             <label><input type="radio" name="supportFloor" value="0.10" checked> 10%</label>
             <label><input type="radio" name="supportFloor" value="0.20"> 20%</label>
           </fieldset>
+
+          <fieldset class="metric-control">
+            <legend>Map metric</legend>
+            <label><input type="radio" name="mapMetric" value="cv" checked> Relative CV</label>
+            <label><input type="radio" name="mapMetric" value="sd"> Absolute SD</label>
+          </fieldset>
         </div>
 
         <div class="legend" aria-label="Map legend">
           <div class="ramp"></div>
-          <div class="ticks"><span>0</span><span>0.15</span><span>0.30</span><span>0.45</span><span>&ge;0.60</span></div>
+          <div id="legendTicks" class="ticks"><span>0</span><span>0.15</span><span>0.30</span><span>0.45</span><span>&ge;0.60</span></div>
+          <p id="metricNote">Color shows relative within-mahalle dispersion (CV).</p>
           <p id="floorNote">Gray districts are masked because the selected party is under 10% mean support or has no usable list/geometry.</p>
         </div>
 

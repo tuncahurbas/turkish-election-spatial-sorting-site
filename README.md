@@ -26,8 +26,8 @@ the browser needs internet access. The district metric data itself is local in
 ## Contents
 
 - `index.html`: one-page interactive map.
-- `assets/app.js`: Leaflet map logic, party selector, election slider, hover
-  tooltips, and click details.
+- `assets/app.js`: Leaflet map logic, party selector, election slider,
+  support-floor and metric toggles, hover tooltips, and click details.
 - `assets/styles.css`: page and map styling.
 - `assets/district_cv.geojson`: compact derived district-level map data.
 - `assets/spatial_sorting_neighborhoods.pdf`: paper PDF copy for the site.
@@ -43,4 +43,5 @@ ADM2 gbOpen / OSM Boundaries and carry ODbL obligations. Gray districts in the
 map are masked when the selected party is below the chosen support floor
 (default 10%) or the party/list/geometry is unavailable. Districts below 10%
 support also show a detail-panel warning because CV is noisy when the party
-mean share is small.
+mean share is small. The map defaults to relative CV but can also color by
+absolute within-mahalle SD, capped at 10 vote-share points for readability.
