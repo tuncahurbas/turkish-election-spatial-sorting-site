@@ -32,6 +32,7 @@ const MASK_COLOR = "#d8d5cd";
 const NO_DATA_COLOR = "#f4f2ed";
 const LOW_SUPPORT_WARNING_FLOOR = 0.10;
 const TURKEY_BOUNDS = L.latLngBounds([35.45, 25.35], [42.45, 45.05]);
+const REGIONAL_PAN_BOUNDS = L.latLngBounds([29.0, 18.0], [48.5, 52.0]);
 const DISTRICT_RENDERER = L.canvas({ padding: 0.35 });
 
 let currentParty = "akp";
@@ -45,10 +46,10 @@ const map = L.map("map", {
   preferCanvas: true,
   zoomSnap: 0.25,
   zoomDelta: 0.5,
-  minZoom: 5.25,
+  minZoom: 4.75,
   maxZoom: 11,
-  maxBounds: TURKEY_BOUNDS.pad(0.18),
-  maxBoundsViscosity: 0.85,
+  maxBounds: REGIONAL_PAN_BOUNDS,
+  maxBoundsViscosity: 0.45,
   worldCopyJump: false,
 }).fitBounds(TURKEY_BOUNDS, { padding: [16, 16] });
 
@@ -244,8 +245,7 @@ fetch("assets/district_cv.geojson")
       renderer: DISTRICT_RENDERER,
       smoothFactor: 1.4,
     }).addTo(map);
-    map.fitBounds(geoLayer.getBounds().pad(0.02), { padding: [18, 18], animate: false });
-    map.setMaxBounds(geoLayer.getBounds().pad(0.18));
+    map.fitBounds(geoLayer.getBounds().pad(0.04), { padding: [18, 18], animate: false });
     refreshMap();
   })
   .catch((error) => {
