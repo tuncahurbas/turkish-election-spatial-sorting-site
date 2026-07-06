@@ -202,10 +202,27 @@ a {
   .panel {
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    padding: 24px;
   }
 
-  .map-wrap,
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .lede {
+    font-size: 0.96rem;
+  }
+
+  .map-wrap {
+    min-height: 58vh;
+    order: 2;
+  }
+
   #map {
-    min-height: 68vh;
+    min-height: 58vh;
+  }
+
+  footer {
+    margin-top: 0;
   }
 }

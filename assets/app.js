@@ -51,9 +51,10 @@ const map = L.map("map", {
   worldCopyJump: false,
 }).fitBounds(TURKEY_BOUNDS, { padding: [16, 16] });
 
+window.__secimMap = map;
+
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
-  bounds: TURKEY_BOUNDS.pad(0.12),
   noWrap: true,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
