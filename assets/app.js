@@ -30,12 +30,13 @@ const COLORS = [
 
 const MASK_COLOR = "#d8d5cd";
 const NO_DATA_COLOR = "#f4f2ed";
-const SUPPORT_FLOOR = 0.05;
+const LOW_SUPPORT_WARNING_FLOOR = 0.10;
 const TURKEY_BOUNDS = L.latLngBounds([35.45, 25.35], [42.45, 45.05]);
 const DISTRICT_RENDERER = L.canvas({ padding: 0.35 });
 
 let currentParty = "akp";
 let currentElectionIndex = 4;
+let currentSupportFloor = 0.10;
 let geoLayer;
 let selectedLayer;
 
@@ -62,6 +63,8 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 const partySelect = document.getElementById("partySelect");
 const electionSlider = document.getElementById("electionSlider");
 const electionLabel = document.getElementById("electionLabel");
+const supportFloorInputs = Array.from(document.querySelectorAll('input[name="supportFloor"]'));
+const floorNote = document.getElementById("floorNote");
 const details = document.getElementById("details");
 
 function activeElection() {
@@ -83,9 +86,17 @@ function colorForCv(cv) {
   return COLORS[idx];
 }
 
+function isMasked(m) {
+  return !m || m.mean_share < currentSupportFloor;
+}
+
+function floorLabel(value = currentSupportFloor) {
+  return `${Math.round(value * 100)}%`;
+}
+
 function styleFeature(feature) {
   const m = metric(feature);
-  const fill = !m ? NO_DATA_COLOR : m.masked ? MASK_COLOR : colorForCv(m.cv);
+  const fill = !m ? NO_DATA_COLOR : isMasked(m) ? MASK_COLOR : colorForCv(m.cv);
   return {
     color: "#fcfcfb",
     weight: 0.45,
@@ -128,7 +139,7 @@ function tooltipHtml(feature) {
   if (!m) {
     return `<strong>${districtTitle(props)}</strong><br>No data for ${PARTY_LABELS[currentParty]}, ${activeElection().label}`;
   }
-  const masked = m.masked ? "<br><em>Masked: party support under 5%</em>" : "";
+  const masked = isMasked(m) ? `<br><em>Masked: party support under ${floorLabel()}</em>` : "";
   return `<strong>${districtTitle(props)}</strong><br>${PARTY_LABELS[currentParty]} ${activeElection().label}<br>CV: ${formatCv(m.cv)} | Share: ${formatPercent(m.mean_share)}${masked}`;
 }
 
@@ -141,8 +152,11 @@ function detailsHtml(feature) {
       <p>No derived value is available for ${PARTY_LABELS[currentParty]} in ${activeElection().label}.</p>
     `;
   }
-  const maskNote = m.masked
-    ? `<p>This district is masked on the map because ${PARTY_LABELS[currentParty]} mean support is below ${(SUPPORT_FLOOR * 100).toFixed(0)}%.</p>`
+  const maskNote = isMasked(m)
+    ? `<p class="mask-note">This district is masked on the map because ${PARTY_LABELS[currentParty]} mean support is below ${floorLabel()}.</p>`
+    : "";
+  const warningNote = m.mean_share < LOW_SUPPORT_WARNING_FLOOR
+    ? `<p class="warning-note">Low support base here: relative dispersion (CV) is noisy and should be read cautiously.</p>`
     : "";
   return `
     <h2>${districtTitle(props)}</h2>
@@ -154,6 +168,7 @@ function detailsHtml(feature) {
       <div class="metric"><span>Mahalles included</span><strong>${formatNumber(m.mahalle_count)}</strong></div>
     </div>
     ${maskNote}
+    ${warningNote}
   `;
 }
 
@@ -186,6 +201,7 @@ function bindFeature(feature, layer) {
 
 function refreshMap() {
   electionLabel.value = activeElection().label;
+  floorNote.textContent = `Gray districts are masked because the selected party is under ${floorLabel()} mean support or has no usable list/geometry.`;
   if (!geoLayer) {
     return;
   }
@@ -205,6 +221,13 @@ partySelect.addEventListener("change", (event) => {
 electionSlider.addEventListener("input", (event) => {
   currentElectionIndex = Number(event.target.value);
   refreshMap();
+});
+
+supportFloorInputs.forEach((input) => {
+  input.addEventListener("change", (event) => {
+    currentSupportFloor = Number(event.target.value);
+    refreshMap();
+  });
 });
 
 fetch("assets/district_cv.geojson")

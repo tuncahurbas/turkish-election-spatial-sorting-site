@@ -40,5 +40,7 @@ large intermediate research outputs.
 District values are voter-weighted aggregations of within-mahalle dispersion
 from the SECIM analysis outputs. District polygons come from geoBoundaries TUR
 ADM2 gbOpen / OSM Boundaries and carry ODbL obligations. Gray districts in the
-map are masked when the selected party is below 5% district mean support or the
-party/list/geometry is unavailable.
+map are masked when the selected party is below the chosen support floor
+(default 10%) or the party/list/geometry is unavailable. Districts below 10%
+support also show a detail-panel warning because CV is noisy when the party
+mean share is small.

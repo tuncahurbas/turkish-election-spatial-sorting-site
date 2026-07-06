@@ -76,6 +76,41 @@ label {
   font-weight: 700;
 }
 
+.floor-control {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.floor-control legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: var(--ink-2);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.floor-control label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.floor-control input {
+  accent-color: #1c5cab;
+}
+
 select,
 input[type="range"] {
   width: 100%;
@@ -135,6 +170,22 @@ footer p,
 .details h2 {
   margin: 0 0 8px;
   font-size: 1.05rem;
+}
+
+.mask-note,
+.warning-note {
+  margin-top: 12px;
+  padding: 9px 10px;
+  border-radius: 6px;
+}
+
+.mask-note {
+  background: #efede7;
+}
+
+.warning-note {
+  background: #fff5d7;
+  color: #4d3b00;
 }
 
 .metric-grid {

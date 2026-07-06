@@ -37,12 +37,19 @@
             <input id="electionSlider" type="range" min="0" max="4" step="1" value="4">
             <output id="electionLabel">May 2023</output>
           </label>
+
+          <fieldset class="floor-control">
+            <legend>Support floor</legend>
+            <label><input type="radio" name="supportFloor" value="0.05"> 5%</label>
+            <label><input type="radio" name="supportFloor" value="0.10" checked> 10%</label>
+            <label><input type="radio" name="supportFloor" value="0.20"> 20%</label>
+          </fieldset>
         </div>
 
         <div class="legend" aria-label="Map legend">
           <div class="ramp"></div>
           <div class="ticks"><span>0</span><span>0.15</span><span>0.30</span><span>0.45</span><span>&ge;0.60</span></div>
-          <p>Gray districts are masked because the selected party is under 5% mean support or has no usable list/geometry.</p>
+          <p id="floorNote">Gray districts are masked because the selected party is under 10% mean support or has no usable list/geometry.</p>
         </div>
 
         <article id="details" class="details">
