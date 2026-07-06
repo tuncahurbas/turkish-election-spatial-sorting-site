@@ -31,6 +31,8 @@ const COLORS = [
 const MASK_COLOR = "#d8d5cd";
 const NO_DATA_COLOR = "#f4f2ed";
 const SUPPORT_FLOOR = 0.05;
+const TURKEY_BOUNDS = L.latLngBounds([35.45, 25.35], [42.45, 45.05]);
+const DISTRICT_RENDERER = L.canvas({ padding: 0.35 });
 
 let currentParty = "akp";
 let currentElectionIndex = 4;
@@ -39,12 +41,20 @@ let selectedLayer;
 
 const map = L.map("map", {
   zoomControl: true,
-  minZoom: 5,
+  preferCanvas: true,
+  zoomSnap: 0.25,
+  zoomDelta: 0.5,
+  minZoom: 5.25,
   maxZoom: 11,
-}).setView([39.0, 35.2], 6);
+  maxBounds: TURKEY_BOUNDS.pad(0.18),
+  maxBoundsViscosity: 0.85,
+  worldCopyJump: false,
+}).fitBounds(TURKEY_BOUNDS, { padding: [16, 16] });
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 19,
+  bounds: TURKEY_BOUNDS.pad(0.12),
+  noWrap: true,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
@@ -77,10 +87,11 @@ function styleFeature(feature) {
   const fill = !m ? NO_DATA_COLOR : m.masked ? MASK_COLOR : colorForCv(m.cv);
   return {
     color: "#fcfcfb",
-    weight: 0.65,
+    weight: 0.45,
     opacity: 1,
     fillColor: fill,
-    fillOpacity: 0.86,
+    fillOpacity: 0.88,
+    renderer: DISTRICT_RENDERER,
   };
 }
 
@@ -206,8 +217,11 @@ fetch("assets/district_cv.geojson")
     geoLayer = L.geoJSON(data, {
       style: styleFeature,
       onEachFeature: bindFeature,
+      renderer: DISTRICT_RENDERER,
+      smoothFactor: 1.4,
     }).addTo(map);
-    map.fitBounds(geoLayer.getBounds(), { padding: [18, 18] });
+    map.fitBounds(geoLayer.getBounds().pad(0.02), { padding: [18, 18], animate: false });
+    map.setMaxBounds(geoLayer.getBounds().pad(0.18));
     refreshMap();
   })
   .catch((error) => {

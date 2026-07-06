@@ -19,6 +19,10 @@ Serve the site:
 
 Then open <http://localhost:8000>.
 
+The preview currently loads Leaflet and OpenStreetMap tiles from public CDNs, so
+the browser needs internet access. The district metric data itself is local in
+`assets/district_cv.geojson`.
+
 ## Contents
 
 - `index.html`: one-page interactive map.
