@@ -221,8 +221,20 @@ function setSelected(layer) {
     geoLayer.resetStyle(selectedLayer);
   }
   selectedLayer = layer;
+  refreshSelectedDetails();
+}
+
+function refreshSelectedDetails() {
+  if (!selectedLayer) {
+    details.innerHTML = `
+      <h2>${PARTY_LABELS[currentParty]} - ${activeElection().label}</h2>
+      <p>Click a district to inspect CV, absolute SD, mean party share, registered voters, and mahalle count.</p>
+    `;
+    return;
+  }
   selectedLayer.setStyle({ color: "#111111", weight: 2.2, fillOpacity: 0.92 });
-  details.innerHTML = detailsHtml(layer.feature);
+  selectedLayer.setTooltipContent(tooltipHtml(selectedLayer.feature));
+  details.innerHTML = detailsHtml(selectedLayer.feature);
 }
 
 function bindFeature(feature, layer) {
@@ -251,12 +263,8 @@ function refreshMap() {
   if (!geoLayer) {
     return;
   }
-  selectedLayer = null;
   geoLayer.setStyle(styleFeature);
-  details.innerHTML = `
-    <h2>${PARTY_LABELS[currentParty]} - ${activeElection().label}</h2>
-    <p>Click a district to inspect CV, absolute SD, mean party share, registered voters, and mahalle count.</p>
-  `;
+  refreshSelectedDetails();
 }
 
 partySelect.addEventListener("change", (event) => {
