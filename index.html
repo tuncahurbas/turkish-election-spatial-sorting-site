@@ -33,12 +33,6 @@
             </select>
           </label>
 
-          <label class="year-control">
-            Election
-            <input id="electionSlider" type="range" min="0" max="4" step="1" value="4">
-            <output id="electionLabel">May 2023</output>
-          </label>
-
           <fieldset class="floor-control">
             <legend>Support floor</legend>
             <label><input type="radio" name="supportFloor" value="0.05"> 5%</label>
@@ -78,6 +72,11 @@
 
       <section class="map-wrap" aria-label="Interactive district map">
         <div id="map"></div>
+        <label class="year-control map-year-control">
+          <span>Election</span>
+          <input id="electionSlider" type="range" min="0" max="4" step="1" value="4">
+          <output id="electionLabel">May 2023</output>
+        </label>
       </section>
     </main>
 
