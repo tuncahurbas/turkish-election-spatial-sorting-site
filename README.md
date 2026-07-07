@@ -49,3 +49,7 @@ map are masked when the selected party is below the chosen support floor
 support also show a detail-panel warning because CV is noisy when the party
 mean share is small. The map defaults to relative CV but can also color by
 absolute within-mahalle SD, capped at 10 vote-share points for readability.
+
+See the top-level `DATA_SOURCES.md` for source metadata, attribution, and
+license notes covering the election data, OSM-derived geometry, and public map
+tiles.
