@@ -35,6 +35,10 @@ the browser needs internet access. The district metric data itself is local in
 The site ships only derived district-level metrics, not raw election archives or
 large intermediate research outputs.
 
+When a user clicks a district, the detail card remains pinned while they change
+election year, party, support floor, or metric. This is intentional: it lets
+users compare the same district across years without finding it again.
+
 ## Data Notes
 
 District values are voter-weighted aggregations of within-mahalle dispersion
